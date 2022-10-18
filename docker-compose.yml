@@ -1,0 +1,71 @@
+version: '3'
+
+services:
+  php_service:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    image: digitalocean.com/php
+    container_name: php_service
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - ./php_service:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - grpc-demo
+
+  php_webserver:
+    image: nginx:alpine
+    container_name: php_webserver
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./php_service:/var/www
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - grpc-demo
+
+  log-service:
+    container_name: log-service
+    build:
+      context: .
+      dockerfile: ./docker/go/Dockerfile
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+      - grpc-demo
+    working_dir: /app
+    ports:
+      - "5002:5002"
+
+  mongo_grpc:
+    image: "mongo:4.2.16-bionic"
+    container_name: mongo_grpc
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: logs
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - data:/data/db
+    networks:
+      - grpc-demo
+
+#Docker Networks
+networks:
+  grpc-demo:
+    driver: bridge
+
+volumes:
+ data: {}
