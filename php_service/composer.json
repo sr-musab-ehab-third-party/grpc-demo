@@ -1,0 +1,21 @@
+{
+    "name": "mosaab/php_service",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Mosaab",
+            "email": "musab.ehab@gmail.com"
+        }
+    ],
+    "require": {
+        "bramus/router": "^1.6",
+        "google/protobuf": "^3.21",
+        "protobuf-php/protobuf": "^0.1.3",
+        "grpc/grpc": "~1.30.0",
+        "ext-grpc": "*"
+    }
+}
